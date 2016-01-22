@@ -389,6 +389,7 @@ QR =
 
   handleGiphy: (urlDefault) ->
     tag = prompt 'Enter a tag', urlDefault
+    tag = tag.replace(" ", "+")
     response = ""
     http = new XMLHttpRequest()
     http.addEventListener 'readystatechange', ->
@@ -397,14 +398,14 @@ QR =
         if http.status in successResultCodes
           response = http.responseText
           response = JSON.parse(response)
+          CrossOrigin.file response["data"]["image_original_url"], (blob) ->
+          if blob
+            QR.handleFiles [blob]
+          else
+            QR.error "Can't load file."
     return if tag is null
-    http.open 'GET', 'http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag='+tag, false
+    http.open 'GET', 'http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag='+tag, true
     http.send()
-    CrossOrigin.file response["data"]["image_original_url"], (blob) ->
-      if blob
-        QR.handleFiles [blob]
-      else
-        QR.error "Can't load file."
 
   handleFiles: (files) ->
     if @ isnt QR # file input

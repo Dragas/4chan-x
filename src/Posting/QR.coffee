@@ -387,6 +387,25 @@ QR =
       else
         QR.error "Can't load file."
 
+  handleGiphy: (urlDefault) ->
+    tag = prompt 'Enter a tag', urlDefault
+    response = ""
+    http = new XMLHttpRequest()
+    http.addEventListener 'readystatechange', ->
+      if http.readyState is 4
+        successResultCodes = [200, 304]
+        if http.status in successResultCodes
+          response = http.responseText
+          response = JSON.parse(response)
+    return if tag is null
+    http.open 'GET', 'http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag='+tag, false
+    http.send()
+    CrossOrigin.file response["data"]["image_original_url"], (blob) ->
+      if blob
+        QR.handleFiles [blob]
+      else
+        QR.error "Can't load file."
+
   handleFiles: (files) ->
     if @ isnt QR # file input
       files  = [@files...]
@@ -467,6 +486,7 @@ QR =
     setNode 'oekakiButton',   '#qr-oekaki-button'
     setNode 'fileRM',         '#qr-filerm'
     setNode 'urlButton',      '#url-button'
+    setNode 'giphyButton',    '#giphy-button'
     setNode 'pasteArea',      '#paste-area'
     setNode 'customCooldown', '#custom-cooldown-button'
     setNode 'dumpButton',     '#dump-button'
@@ -530,6 +550,7 @@ QR =
     $.on nodes.spoiler,        'change',    -> QR.selected.nodes.spoiler.click()
     $.on nodes.oekakiButton,   'click',     QR.oekaki.button
     $.on nodes.fileRM,         'click',     -> QR.selected.rmFile()
+    $.on nodes.giphyButton,    'click',     -> QR.handleGiphy ''
     $.on nodes.urlButton,      'click',     -> QR.handleUrl ''
     $.on nodes.customCooldown, 'click',     QR.toggleCustomCooldown
     $.on nodes.dumpButton,     'click',     -> nodes.el.classList.toggle 'dump'
